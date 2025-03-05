@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Mail, Github, Linkedin } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const location = useLocation();
@@ -27,33 +29,146 @@ const Auth = () => {
     }
   }, [location]);
   
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/');
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          navigate('/');
+        }
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+  
   // State for form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [accountType, setAccountType] = useState<'client' | 'freelancer'>('client');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
     
-    // Simulate authentication
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      // Show a success toast message
+      if (error) throw error;
+      
       toast({
-        title: authType === 'signin' ? 'Connexion réussie' : 'Compte créé avec succès',
-        description: authType === 'signin' 
-          ? 'Bienvenue sur FreelanceAI.' 
-          : 'Votre compte a été créé. Vous pouvez maintenant vous connecter.',
+        title: 'Connexion réussie',
+        description: 'Bienvenue sur FreelanceAI.',
         variant: 'default',
       });
       
-      // Redirect to dashboard or home
-      navigate('/dashboard');
-    }, 1500);
+      // Navigation will be handled by the auth state listener
+    } catch (error: any) {
+      setError(error.message || 'Une erreur est survenue lors de la connexion');
+      toast({
+        title: 'Erreur de connexion',
+        description: error.message || 'Vérifiez vos identifiants et réessayez.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    
+    try {
+      // Register the user
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+            account_type: accountType,
+          },
+        },
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Compte créé avec succès',
+        description: 'Vérifiez votre email pour confirmer votre inscription.',
+        variant: 'default',
+      });
+      
+      // If email confirmation is disabled, the user will be automatically signed in
+    } catch (error: any) {
+      setError(error.message || 'Une erreur est survenue lors de l\'inscription');
+      toast({
+        title: 'Erreur d\'inscription',
+        description: error.message || 'Vérifiez vos informations et réessayez.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -85,6 +200,12 @@ const Auth = () => {
               </CardHeader>
               
               <CardContent>
+                {error && (
+                  <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
+                    {error}
+                  </div>
+                )}
+                
                 <Tabs 
                   value={authType} 
                   onValueChange={(v) => setAuthType(v as 'signin' | 'signup')}
@@ -96,7 +217,7 @@ const Auth = () => {
                   </TabsList>
                   
                   <TabsContent value="signin">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSignIn} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input 
@@ -113,7 +234,7 @@ const Auth = () => {
                         <div className="flex items-center justify-between">
                           <Label htmlFor="password">Mot de passe</Label>
                           <Link 
-                            to="/forgot-password" 
+                            to="/auth/reset-password" 
                             className="text-xs text-muted-foreground hover:text-primary"
                           >
                             Mot de passe oublié?
@@ -146,7 +267,7 @@ const Auth = () => {
                   </TabsContent>
                   
                   <TabsContent value="signup">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSignUp} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">Nom complet</Label>
                         <Input 
@@ -256,7 +377,7 @@ const Auth = () => {
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
                     <Mail className="h-4 w-4 mr-2" />
                     Google
                   </Button>
@@ -264,7 +385,7 @@ const Auth = () => {
                     <Linkedin className="h-4 w-4 mr-2" />
                     LinkedIn
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={handleGithubSignIn}>
                     <Github className="h-4 w-4 mr-2" />
                     GitHub
                   </Button>

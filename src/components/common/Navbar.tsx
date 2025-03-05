@@ -2,15 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, X, User, MessageSquare } from 'lucide-react';
+import { Search, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/context/AuthContext';
+import UserMenu from './UserMenu';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   // Track scrolling to change navbar appearance
   useEffect(() => {
@@ -80,16 +83,23 @@ const Navbar = () => {
           >
             <Search className="h-5 w-5" />
           </Button>
-          <Link to="/auth">
-            <Button variant="outline" className="transition-all duration-300">
-              Se connecter
-            </Button>
-          </Link>
-          <Link to="/auth?type=signup">
-            <Button className="bg-gradient-to-r from-indigo-500 to-cyan-400 hover:from-indigo-600 hover:to-cyan-500 text-white transition-all duration-300">
-              S'inscrire
-            </Button>
-          </Link>
+          
+          {user ? (
+            <UserMenu />
+          ) : (
+            <>
+              <Link to="/auth">
+                <Button variant="outline" className="transition-all duration-300">
+                  Se connecter
+                </Button>
+              </Link>
+              <Link to="/auth?type=signup">
+                <Button className="bg-gradient-to-r from-indigo-500 to-cyan-400 hover:from-indigo-600 hover:to-cyan-500 text-white transition-all duration-300">
+                  S'inscrire
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -126,16 +136,24 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="mt-8 flex flex-col space-y-4 w-full max-w-xs">
-                <Link to="/auth" className="w-full">
-                  <Button variant="outline" className="w-full">
-                    Se connecter
+                {user ? (
+                  <Button onClick={() => { setMenuOpen(false); }} className="w-full">
+                    Mon profil
                   </Button>
-                </Link>
-                <Link to="/auth?type=signup" className="w-full">
-                  <Button className="w-full bg-gradient-to-r from-indigo-500 to-cyan-400">
-                    S'inscrire
-                  </Button>
-                </Link>
+                ) : (
+                  <>
+                    <Link to="/auth" className="w-full">
+                      <Button variant="outline" className="w-full">
+                        Se connecter
+                      </Button>
+                    </Link>
+                    <Link to="/auth?type=signup" className="w-full">
+                      <Button className="w-full bg-gradient-to-r from-indigo-500 to-cyan-400">
+                        S'inscrire
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
