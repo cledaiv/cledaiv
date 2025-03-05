@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import { Search, SlidersHorizontal, Star } from 'lucide-react';
 import BlurCard from '@/components/ui/blur-card';
 
@@ -110,9 +110,11 @@ const Browse = () => {
                   <span className="text-lg font-semibold">
                     {freelancer.hourlyRate}€/h
                   </span>
-                  <Button variant="outline">
-                    Voir le profil
-                  </Button>
+                  <Link to={`/freelancers/${freelancer.id}`}>
+                    <Button variant="outline">
+                      Voir le profil
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </BlurCard>
