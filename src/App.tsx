@@ -15,6 +15,8 @@ import AuthCallback from "./pages/AuthCallback";
 import ChatBot from "./pages/ChatBot";
 import BlockchainAPI from "./pages/BlockchainAPI";
 import Payment from "./pages/Payment";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookieConsent from "./components/common/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -35,9 +37,11 @@ const App = () => (
             <Route path="/chatbot" element={<ChatBot />} />
             <Route path="/blockchain-api" element={<BlockchainAPI />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieConsent />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

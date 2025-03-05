@@ -2,7 +2,13 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, Plus, ArrowDownUp, History } from "lucide-react";
+import { Wallet, Plus, ArrowDownUp, History, Info } from "lucide-react";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface WalletCardProps {
   balance: number;
@@ -69,6 +75,26 @@ const WalletCard = ({
               <History className="mr-2 h-4 w-4" />
               Historique des transactions
             </Button>
+          </div>
+
+          <div className="border-t pt-3 mt-2 text-xs text-muted-foreground">
+            <div className="flex items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 mr-1 inline-block cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Conformément à la réglementation MiCA (Markets in Crypto-Assets) et aux directives anti-blanchiment (AML), nous pouvons demander une vérification supplémentaire pour certaines transactions.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <span>Conformité réglementaire : transactions surveillées selon les normes AML et MiCA.</span>
+            </div>
+            <div className="mt-1">
+              <span>Vos données sont protégées selon le RGPD. </span>
+              <a href="/privacy-policy" className="text-primary hover:underline">Politique de confidentialité</a>
+            </div>
           </div>
         </div>
       </CardContent>
