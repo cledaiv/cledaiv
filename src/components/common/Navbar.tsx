@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, CreditCard } from 'lucide-react';
+import { LogOut, CreditCard, Loader2 } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 
 const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
@@ -42,15 +42,19 @@ const NavLinks = () => {
 const Navbar = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      setIsLoggingOut(true);
       toast({
-        title: "Déconnexion réussie",
-        description: "Vous avez été déconnecté avec succès",
+        title: "Déconnexion en cours",
+        description: "Veuillez patienter...",
       });
-      navigate('/');
+      
+      await signOut();
+      
+      // The signOut function now handles navigation, so we don't need to do it here
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       toast({
@@ -58,6 +62,8 @@ const Navbar = () => {
         description: "Un problème est survenu lors de la déconnexion",
         variant: "destructive",
       });
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -75,7 +81,7 @@ const Navbar = () => {
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.user_metadata?.avatar_url as string} alt={user?.user_metadata?.full_name as string} />
-                  <AvatarFallback>{(user?.user_metadata?.full_name as string)?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>{(user?.user_metadata?.full_name as string)?.slice(0, 2).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -85,9 +91,22 @@ const Navbar = () => {
               <DropdownMenuItem>
                 <Link to="/profile" className="w-full h-full block">Profile</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                <LogOut className="mr-2 h-4 w-4" />
-                Se déconnecter
+              <DropdownMenuItem 
+                onClick={handleSignOut}
+                disabled={isLoggingOut}
+                className="cursor-pointer"
+              >
+                {isLoggingOut ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Déconnexion en cours...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Se déconnecter
+                  </>
+                )}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

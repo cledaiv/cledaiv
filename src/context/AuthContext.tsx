@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
+        console.log('Auth state changed:', event, !!currentSession);
         setSession(currentSession);
         setUser(currentSession?.user || null);
         setLoading(false);
@@ -53,7 +54,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      // Clear local state first to improve UI responsiveness
+      setUser(null);
+      setSession(null);
+      
+      // Then attempt to sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Force refresh the page to ensure clean state
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Even if there's an error, we still want to clear local state
+      window.location.href = '/auth';
+    }
   };
 
   const value = {
