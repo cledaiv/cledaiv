@@ -16,6 +16,9 @@ import ChatBot from "./pages/ChatBot";
 import BlockchainAPI from "./pages/BlockchainAPI";
 import Payment from "./pages/Payment";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Projects from "./pages/Projects";
+import NewProject from "./pages/NewProject";
+import ProjectView from "./pages/ProjectView";
 import CookieConsent from "./components/common/CookieConsent";
 
 const queryClient = new QueryClient();
@@ -38,6 +41,9 @@ const App = () => (
             <Route path="/blockchain-api" element={<BlockchainAPI />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/new" element={<NewProject />} />
+            <Route path="/projects/:id" element={<ProjectView />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
