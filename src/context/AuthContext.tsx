@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        setLoading(true);
         const { data } = await supabase.auth.getSession();
         setSession(data.session);
         setUser(data.session?.user || null);
@@ -41,20 +40,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log("Auth state changed:", event, !!currentSession);
-        
-        if (event === 'SIGNED_OUT') {
-          // On sign out, immediately clear state
-          setSession(null);
-          setUser(null);
-          // No need to reload here, we'll handle it in signOut function
-        } else {
-          // For other events, update session and user state
-          setSession(currentSession);
-          setUser(currentSession?.user || null);
-        }
-        
+      (event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user || null);
         setLoading(false);
       }
     );
@@ -65,32 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    try {
-      // Immediately set loading to prevent UI flicker
-      setLoading(true);
-      
-      // Clear local state before API call
-      setUser(null);
-      setSession(null);
-      
-      // Set a flag in sessionStorage to prevent automatic login after redirect
-      sessionStorage.setItem('intentionalLogout', 'true');
-      
-      try {
-        // Attempt Supabase signout but don't wait for success
-        await supabase.auth.signOut().catch(e => console.error("Supabase signout error:", e));
-      } catch (error) {
-        console.error("Inner signout error:", error);
-        // Continue even on API error
-      }
-      
-      // Redirect to login page
-      window.location.href = '/auth';
-    } catch (error) {
-      console.error("Error during sign out:", error);
-      // Force redirect to auth page even on error
-      window.location.href = '/auth';
-    }
+    await supabase.auth.signOut();
   };
 
   const value = {

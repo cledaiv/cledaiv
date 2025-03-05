@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -43,32 +44,22 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    // Show loading toast
-    toast({
-      title: "Déconnexion en cours",
-      description: "Veuillez patienter...",
-    });
-    
     try {
-      // Call the signOut method from AuthContext which will handle the redirect
       await signOut();
-      // No need to navigate or show another toast as page will redirect
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
+      });
+      navigate('/');
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       toast({
-        variant: "destructive",
         title: "Erreur de déconnexion",
-        description: "Une erreur est survenue lors de la déconnexion",
+        description: "Un problème est survenu lors de la déconnexion",
+        variant: "destructive",
       });
     }
   };
-
-  const handleLogin = () => {
-    // Use direct navigation to ensure it works
-    window.location.href = '/auth';
-  };
-
-  console.log("Current user state:", !!user);
 
   return (
     <div className="bg-background border-b">
@@ -84,7 +75,7 @@ const Navbar = () => {
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.user_metadata?.avatar_url as string} alt={user?.user_metadata?.full_name as string} />
-                  <AvatarFallback>{(user?.user_metadata?.full_name as string)?.slice(0, 2).toUpperCase() || 'U'}</AvatarFallback>
+                  <AvatarFallback>{(user?.user_metadata?.full_name as string)?.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -101,9 +92,9 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button onClick={handleLogin}>
-            Se connecter
-          </Button>
+          <Link to="/auth">
+            <Button>Se connecter</Button>
+          </Link>
         )}
       </div>
     </div>

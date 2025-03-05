@@ -9,34 +9,10 @@ const AuthCallback = () => {
   useEffect(() => {
     // Handle the OAuth callback
     const handleAuthCallback = async () => {
-      try {
-        // Check if this was an intentional logout
-        const intentionalLogout = sessionStorage.getItem('intentionalLogout') === 'true';
-        
-        if (intentionalLogout) {
-          // Clear the flag
-          sessionStorage.removeItem('intentionalLogout');
-          // Just go to auth page, no need to get session
-          navigate('/auth', { replace: true });
-          return;
-        }
-        
-        // Regular auth flow for logins
-        const { data, error } = await supabase.auth.getSession();
-        
-        console.log("Auth callback session check:", !!data.session, error ? error.message : "no error");
-        
-        // If we have a session, go to home, otherwise to auth
-        if (data.session) {
-          navigate('/', { replace: true });
-        } else {
-          navigate('/auth', { replace: true });
-        }
-      } catch (err) {
-        console.error("Error in auth callback:", err);
-        // Redirect to auth page on error
-        navigate('/auth', { replace: true });
-      }
+      const { data, error } = await supabase.auth.getSession();
+      
+      // Redirect to home page regardless of the result
+      navigate('/', { replace: true });
     };
 
     handleAuthCallback();
