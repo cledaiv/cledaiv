@@ -20,6 +20,7 @@ import Projects from "./pages/Projects";
 import NewProject from "./pages/NewProject";
 import ProjectView from "./pages/ProjectView";
 import Profile from "./pages/Profile";
+import Subscription from "./pages/Subscription";
 import CookieConsent from "./components/common/CookieConsent";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/projects/new" element={<NewProject />} />
             <Route path="/projects/:id" element={<ProjectView />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/subscription" element={<Subscription />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
