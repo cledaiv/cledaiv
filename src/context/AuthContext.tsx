@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        setLoading(true);
         const { data } = await supabase.auth.getSession();
         setSession(data.session);
         setUser(data.session?.user || null);
@@ -40,11 +41,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         console.log("Auth state changed:", event, !!currentSession);
+        
+        // Update session and user state
         setSession(currentSession);
         setUser(currentSession?.user || null);
         setLoading(false);
+        
+        // Force reload on sign out to clear any cached state
+        if (event === 'SIGNED_OUT') {
+          window.location.href = '/';
+        }
       }
     );
 
@@ -55,21 +63,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Force setting user state to null first to ensure UI updates immediately
-      setUser(null);
-      setSession(null);
-      
-      // Then attempt the actual signout
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.warn("Non-critical signout error:", error);
-        // We already nullified the user state above, so we can ignore this error
-      }
+      await supabase.auth.signOut();
+      // No need to manually set user/session to null as the auth state listener will handle it
     } catch (error) {
       console.error("Error during sign out:", error);
-      // Even if there's an error, we want to ensure the user is logged out locally
-      setUser(null);
-      setSession(null);
+      // Force a page reload on error to ensure the user is logged out client-side
+      window.location.href = '/';
     }
   };
 

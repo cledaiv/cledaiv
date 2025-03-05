@@ -50,23 +50,19 @@ const Navbar = () => {
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès",
       });
-      navigate('/');
+      // No need to navigate manually, AuthContext will handle it
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
-      // Even if there's an error, we still want to show a success message
-      // because we force-nullified the user state in AuthContext
       toast({
-        title: "Déconnexion réussie",
-        description: "Vous avez été déconnecté avec succès",
+        variant: "destructive",
+        title: "Erreur de déconnexion",
+        description: "Une erreur est survenue lors de la déconnexion",
       });
-      navigate('/');
     }
   };
 
   const handleLogin = () => {
-    console.log("Navigating to auth page");
-    // Force navigation with window.location instead of React Router
-    window.location.href = '/auth';
+    navigate('/auth');
   };
 
   console.log("Current user state:", !!user);
