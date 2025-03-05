@@ -63,18 +63,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Force clear state first for immediate UI update
+      // First clear local state immediately
       setUser(null);
       setSession(null);
       
-      // Then perform supabase signout
-      await supabase.auth.signOut();
+      try {
+        // Then attempt the Supabase signout - but don't wait for it if it fails
+        await supabase.auth.signOut().catch(e => console.error("Supabase signout error:", e));
+      } catch (innerError) {
+        console.error("Inner signout error:", innerError);
+        // Ignore errors from Supabase signout
+      }
       
-      // Force a page reload to ensure clean state
+      // Always force a refresh to clear all local state
       window.location.href = '/';
     } catch (error) {
       console.error("Error during sign out:", error);
-      // Force a page reload on error to ensure the user is logged out client-side
+      // Even on error, force reload to ensure clean state
       window.location.href = '/';
     }
   };

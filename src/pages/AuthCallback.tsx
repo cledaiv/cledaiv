@@ -9,10 +9,19 @@ const AuthCallback = () => {
   useEffect(() => {
     // Handle the OAuth callback
     const handleAuthCallback = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      
-      // Redirect to home page regardless of the result
-      navigate('/', { replace: true });
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        // Log the result
+        console.log("Auth callback session check:", !!data.session, error ? error.message : "no error");
+        
+        // Redirect to home page
+        navigate('/', { replace: true });
+      } catch (err) {
+        console.error("Error in auth callback:", err);
+        // Redirect to home page even on error
+        navigate('/', { replace: true });
+      }
     };
 
     handleAuthCallback();

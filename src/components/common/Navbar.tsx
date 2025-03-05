@@ -44,17 +44,17 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
+    // Show loading toast
+    toast({
+      title: "Déconnexion en cours",
+      description: "Veuillez patienter...",
+    });
+    
     try {
       // Call the signOut method from AuthContext
       await signOut();
       
-      // Show success toast
-      toast({
-        title: "Déconnexion réussie",
-        description: "Vous avez été déconnecté avec succès",
-      });
-      
-      // Note: No need to navigate manually as AuthContext handles redirection
+      // The page will reload automatically from the AuthContext
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       toast({
@@ -62,11 +62,15 @@ const Navbar = () => {
         title: "Erreur de déconnexion",
         description: "Une erreur est survenue lors de la déconnexion",
       });
+      
+      // Force reload even on error
+      window.location.href = '/';
     }
   };
 
   const handleLogin = () => {
-    navigate('/auth');
+    // Use direct navigation to ensure it works
+    window.location.href = '/auth';
   };
 
   console.log("Current user state:", !!user);
