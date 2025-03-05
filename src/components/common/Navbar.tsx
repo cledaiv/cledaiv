@@ -63,6 +63,11 @@ const Navbar = () => {
     }
   };
 
+  const handleLogin = () => {
+    console.log("Navigating to auth page");
+    navigate('/auth');
+  };
+
   console.log("Current user state:", !!user);
 
   return (
@@ -96,7 +101,7 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button onClick={() => navigate('/auth')}>
+          <Button onClick={handleLogin}>
             Se connecter
           </Button>
         )}
