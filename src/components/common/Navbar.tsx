@@ -65,7 +65,8 @@ const Navbar = () => {
 
   const handleLogin = () => {
     console.log("Navigating to auth page");
-    navigate('/auth');
+    // Force navigation with window.location instead of React Router
+    window.location.href = '/auth';
   };
 
   console.log("Current user state:", !!user);
