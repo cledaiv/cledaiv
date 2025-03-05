@@ -46,7 +46,7 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <img src="/lovable-uploads/c22cfa59-ebf6-498e-b529-f34c40ef1f03.png" alt="CLEDAIV Logo" className="h-8 w-auto" />
-          <span className="font-bold text-xl text-green-500">MyFreelancer</span>
+          <span className="font-bold text-xl text-green-500">CLEDAIV</span>
         </Link>
         <NavLinks />
         {user ? (
