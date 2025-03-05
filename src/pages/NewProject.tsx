@@ -47,16 +47,19 @@ const NewProject = () => {
   // Handle project submission
   const handleSubmit = async (projectData: Project) => {
     try {
+      // Convert Date objects to ISO strings for Supabase
       const newProject = {
         ...projectData,
         client_id: user?.id,
         status: 'open',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        start_date: projectData.start_date ? projectData.start_date.toISOString() : undefined,
+        deadline: projectData.deadline ? projectData.deadline.toISOString() : undefined
       };
       
       const { data, error } = await supabase
         .from('projects')
-        .insert([newProject])
+        .insert(newProject)
         .select()
         .single();
         
