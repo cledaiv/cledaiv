@@ -11,6 +11,7 @@ import PortfolioTab from '@/components/freelancer/PortfolioTab';
 import ReviewsTab from '@/components/freelancer/ReviewsTab';
 import FreelancerSidebar from '@/components/freelancer/FreelancerSidebar';
 import { Freelancer } from '@/data/freelancers';
+import { Helmet } from 'react-helmet-async';
 
 const FreelancerDetail = () => {
   const { id } = useParams();
@@ -42,6 +43,11 @@ const FreelancerDetail = () => {
   if (!freelancer) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <Helmet>
+          <title>Freelancer non trouvé | CLEDAIV</title>
+          <meta name="description" content="Le profil du freelancer que vous recherchez n'existe pas ou a été supprimé." />
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
         <h2 className="text-2xl font-bold mb-4">Freelance non trouvé</h2>
         <p className="text-muted-foreground mb-6">Le profil que vous recherchez n'existe pas ou a été supprimé.</p>
         <Link to="/browse">
@@ -56,8 +62,12 @@ const FreelancerDetail = () => {
 
   return (
     <div className="min-h-screen bg-background pb-16">
-      {/* Header avec profil du freelance */}
-      <FreelancerHeader freelancer={freelancer} />
+      <Helmet>
+        <title>{`${freelancer.name} - ${freelancer.title} | CLEDAIV`}</title>
+        <meta name="description" content={`${freelancer.name}, expert en ${freelancer.skills.join(', ')}. Découvrez son portfolio, ses compétences et ses avis.`} />
+        <meta name="keywords" content={`${freelancer.name}, freelance, ${freelancer.skills.join(', ')}, expert`} />
+        <link rel="canonical" href={`https://cledaiv.com/freelancers/${id}`} />
+      </Helmet>
       
       {/* Contenu principal */}
       <div className="container mx-auto px-4 py-8">

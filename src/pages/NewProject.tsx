@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Project } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Freelancer } from '@/types';
+import { Helmet } from 'react-helmet-async';
 
 const NewProject = () => {
   const navigate = useNavigate();
@@ -86,6 +87,13 @@ const NewProject = () => {
   
   return (
     <div className="container mx-auto py-6">
+      <Helmet>
+        <title>Créer un nouveau projet | CLEDAIV</title>
+        <meta name="description" content="Publiez votre projet et trouvez les meilleurs experts en IA et blockchain pour le réaliser." />
+        <meta name="keywords" content="nouveau projet, publier, IA, blockchain, freelancers, experts" />
+        <link rel="canonical" href="https://cledaiv.com/projects/new" />
+      </Helmet>
+      
       <Button 
         variant="ghost" 
         className="mb-4"

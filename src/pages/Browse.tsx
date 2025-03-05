@@ -7,6 +7,7 @@ import FilterPanel from '@/components/browse/FilterPanel';
 import ResultsHeader from '@/components/browse/ResultsHeader';
 import FreelancerList from '@/components/browse/FreelancerList';
 import { useFreelancers } from '@/hooks/use-freelancers';
+import { Helmet } from 'react-helmet-async';
 
 const Browse = () => {
   const {
@@ -44,6 +45,13 @@ const Browse = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        <title>Explorer les Freelancers en IA et Blockchain | CLEDAIV</title>
+        <meta name="description" content="Trouvez des experts en IA, blockchain et cryptomonnaie pour vos projets. Filtrez par compétences, tarifs et évaluations." />
+        <meta name="keywords" content="freelancers, IA, blockchain, recherche, experts, développeurs, consultants" />
+        <link rel="canonical" href="https://cledaiv.com/browse" />
+      </Helmet>
+      
       <Navbar />
       <main className="container mx-auto px-4 py-8 mt-20 flex-grow">
         {/* Search and Filters Header */}
