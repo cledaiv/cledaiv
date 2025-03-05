@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, CreditCard } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
   <Link to={to} className="text-sm font-medium transition-colors hover:text-primary">
@@ -40,6 +41,25 @@ const NavLinks = () => {
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      toast({
+        title: "Erreur de déconnexion",
+        description: "Un problème est survenu lors de la déconnexion",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="bg-background border-b">
@@ -65,7 +85,7 @@ const Navbar = () => {
               <DropdownMenuItem>
                 <Link to="/profile" className="w-full h-full block">Profile</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onSelect={() => signOut()}>
+              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 Se déconnecter
               </DropdownMenuItem>
