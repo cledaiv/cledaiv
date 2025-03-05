@@ -61,6 +61,8 @@ const Navbar = () => {
     }
   };
 
+  console.log("Current user state:", !!user);
+
   return (
     <div className="bg-background border-b">
       <div className="container flex h-16 items-center justify-between">
@@ -75,7 +77,7 @@ const Navbar = () => {
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.user_metadata?.avatar_url as string} alt={user?.user_metadata?.full_name as string} />
-                  <AvatarFallback>{(user?.user_metadata?.full_name as string)?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>{(user?.user_metadata?.full_name as string)?.slice(0, 2).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
