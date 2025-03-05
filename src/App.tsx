@@ -12,6 +12,8 @@ import FreelancerDetail from "./pages/FreelancerDetail";
 import HowItWorksPage from "./pages/HowItWorks";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
+import ChatBot from "./pages/ChatBot";
+import BlockchainAPI from "./pages/BlockchainAPI";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/chatbot" element={<ChatBot />} />
+            <Route path="/blockchain-api" element={<BlockchainAPI />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
