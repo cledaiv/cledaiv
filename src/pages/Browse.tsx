@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import Navbar from '@/components/common/Navbar';
+import Footer from '@/components/common/Footer';
 import SearchBar from '@/components/browse/SearchBar';
 import FilterPanel from '@/components/browse/FilterPanel';
 import ResultsHeader from '@/components/browse/ResultsHeader';
@@ -41,8 +43,9 @@ const Browse = () => {
   const totalPages = Math.ceil(filteredFreelancers.length / freelancersPerPage);
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8 mt-20 flex-grow">
         {/* Search and Filters Header */}
         <SearchBar 
           searchTerm={searchTerm}
@@ -90,6 +93,7 @@ const Browse = () => {
           paginate={paginate}
         />
       </main>
+      <Footer />
     </div>
   );
 };
