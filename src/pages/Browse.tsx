@@ -8,13 +8,22 @@ import {
   Search, 
   SlidersHorizontal, 
   X,
-  ChevronDown,
-  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import BlurCard from '@/components/ui/blur-card';
 import { freelancersData } from '@/data/freelancers';
 import { renderStars } from '@/utils/freelancer-utils';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const Browse = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +33,10 @@ const Browse = () => {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [filteredFreelancers, setFilteredFreelancers] = useState(freelancersData);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const freelancersPerPage = 6;
 
   const categories = ['IA', 'Blockchain', 'Cryptomonnaie', 'Services PME'];
   
@@ -82,7 +95,37 @@ const Browse = () => {
     }
 
     setFilteredFreelancers(filtered);
+    // Reset to first page when filters change
+    setCurrentPage(1);
   }, [searchTerm, selectedCategory, priceRange, minRating, selectedSkills]);
+
+  // Get current freelancers to display based on pagination
+  const indexOfLastFreelancer = currentPage * freelancersPerPage;
+  const indexOfFirstFreelancer = indexOfLastFreelancer - freelancersPerPage;
+  const currentFreelancers = filteredFreelancers.slice(indexOfFirstFreelancer, indexOfLastFreelancer);
+  
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredFreelancers.length / freelancersPerPage);
+
+  // Generate array of page numbers
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  // Handle page change
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  
+  // Previous page
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  
+  // Next page
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -215,62 +258,148 @@ const Browse = () => {
           <h2 className="text-xl font-semibold">
             {filteredFreelancers.length} freelance{filteredFreelancers.length !== 1 ? 's' : ''} trouvé{filteredFreelancers.length !== 1 ? 's' : ''}
           </h2>
+          {totalPages > 1 && (
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} sur {totalPages}
+            </div>
+          )}
         </div>
 
         {/* Freelancers Grid */}
-        {filteredFreelancers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredFreelancers.map((freelancer) => (
-              <BlurCard key={freelancer.id} className="h-full">
-                <div className="p-6">
-                  <div className="flex items-start gap-4">
-                    <img 
-                      src={freelancer.image} 
-                      alt={freelancer.name}
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="font-semibold text-lg">{freelancer.name}</h3>
-                      <p className="text-muted-foreground">{freelancer.title}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <div className="flex">{renderStars(freelancer.rating)}</div>
-                        <span className="font-medium">{freelancer.rating}</span>
-                        <span className="text-muted-foreground">
-                          ({freelancer.reviews} avis)
-                        </span>
+        {currentFreelancers.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentFreelancers.map((freelancer) => (
+                <BlurCard key={freelancer.id} className="h-full">
+                  <div className="p-6">
+                    <div className="flex items-start gap-4">
+                      <img 
+                        src={freelancer.image} 
+                        alt={freelancer.name}
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                      <div>
+                        <h3 className="font-semibold text-lg">{freelancer.name}</h3>
+                        <p className="text-muted-foreground">{freelancer.title}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <div className="flex">{renderStars(freelancer.rating)}</div>
+                          <span className="font-medium">{freelancer.rating}</span>
+                          <span className="text-muted-foreground">
+                            ({freelancer.reviews} avis)
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-4">
-                    <div className="flex flex-wrap gap-2">
-                      {freelancer.skills.slice(0, 3).map((skill) => (
-                        <Badge key={skill} variant="secondary">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {freelancer.skills.length > 3 && (
-                        <Badge variant="outline">
-                          +{freelancer.skills.length - 3}
-                        </Badge>
-                      )}
+                    <div className="mt-4">
+                      <div className="flex flex-wrap gap-2">
+                        {freelancer.skills.slice(0, 3).map((skill) => (
+                          <Badge key={skill} variant="secondary">
+                            {skill}
+                          </Badge>
+                        ))}
+                        {freelancer.skills.length > 3 && (
+                          <Badge variant="outline">
+                            +{freelancer.skills.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex items-center justify-between">
+                      <span className="text-lg font-semibold">
+                        {freelancer.price}€/h
+                      </span>
+                      <Link to={`/freelancers/${freelancer.id}`}>
+                        <Button variant="outline">
+                          Voir le profil
+                        </Button>
+                      </Link>
                     </div>
                   </div>
+                </BlurCard>
+              ))}
+            </div>
 
-                  <div className="mt-6 flex items-center justify-between">
-                    <span className="text-lg font-semibold">
-                      {freelancer.price}€/h
-                    </span>
-                    <Link to={`/freelancers/${freelancer.id}`}>
-                      <Button variant="outline">
-                        Voir le profil
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </BlurCard>
-            ))}
-          </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={goToPreviousPage} 
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {/* First page */}
+                    {currentPage > 3 && (
+                      <PaginationItem>
+                        <PaginationLink onClick={() => paginate(1)}>
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+                    
+                    {/* Ellipsis */}
+                    {currentPage > 4 && (
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    )}
+                    
+                    {/* Pages */}
+                    {pageNumbers
+                      .filter(number => {
+                        if (totalPages <= 7) return true;
+                        return Math.abs(number - currentPage) < 3 || number === 1 || number === totalPages;
+                      })
+                      .map(number => {
+                        // Skip if we already added first or last page
+                        if ((number === 1 && currentPage > 3) || (number === totalPages && currentPage < totalPages - 2)) {
+                          return null;
+                        }
+                        
+                        return (
+                          <PaginationItem key={number}>
+                            <PaginationLink 
+                              isActive={currentPage === number} 
+                              onClick={() => paginate(number)}
+                            >
+                              {number}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+                    
+                    {/* Ellipsis */}
+                    {currentPage < totalPages - 3 && (
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    )}
+                    
+                    {/* Last page */}
+                    {currentPage < totalPages - 2 && (
+                      <PaginationItem>
+                        <PaginationLink onClick={() => paginate(totalPages)}>
+                          {totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={goToNextPage} 
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center p-12">
             <p className="text-lg text-muted-foreground">Aucun freelance ne correspond à vos critères de recherche.</p>
