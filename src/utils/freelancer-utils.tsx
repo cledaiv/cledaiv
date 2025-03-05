@@ -17,6 +17,39 @@ export const renderStars = (rating: number) => {
   ));
 };
 
+// Sorting functions
+export type SortOption = 'relevant' | 'price-low' | 'price-high' | 'rating' | 'reviews';
+
+export const getSortLabel = (sortOption: SortOption): string => {
+  switch (sortOption) {
+    case 'relevant': return 'Pertinence';
+    case 'price-low': return 'Prix: croissant';
+    case 'price-high': return 'Prix: décroissant';
+    case 'rating': return 'Note';
+    case 'reviews': return 'Nombre d\'avis';
+    default: return 'Pertinence';
+  }
+};
+
+export const sortFreelancers = (freelancers: any[], sortOption: SortOption) => {
+  const result = [...freelancers];
+  
+  switch (sortOption) {
+    case 'price-low':
+      return result.sort((a, b) => a.price - b.price);
+    case 'price-high':
+      return result.sort((a, b) => b.price - a.price);
+    case 'rating':
+      return result.sort((a, b) => b.rating - a.rating);
+    case 'reviews':
+      return result.sort((a, b) => b.reviews - a.reviews);
+    case 'relevant':
+    default:
+      // For relevance, we don't change the order
+      return result;
+  }
+};
+
 // Pagination helper functions
 export const paginateArray = <T,>(array: T[], itemsPerPage: number, currentPage: number): T[] => {
   const indexOfLastItem = currentPage * itemsPerPage;

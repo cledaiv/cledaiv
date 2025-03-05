@@ -10,11 +10,22 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  LayoutGrid,
+  List,
+  ArrowUpDown
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import BlurCard from '@/components/ui/blur-card';
 import { freelancersData } from '@/data/freelancers';
-import { renderStars } from '@/utils/freelancer-utils';
+import { 
+  renderStars, 
+  paginateArray, 
+  calculateTotalPages, 
+  getVisiblePageNumbers,
+  sortFreelancers,
+  getSortLabel,
+  type SortOption
+} from '@/utils/freelancer-utils';
 import {
   Pagination,
   PaginationContent,
@@ -24,6 +35,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Browse = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,10 +50,12 @@ const Browse = () => {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [filteredFreelancers, setFilteredFreelancers] = useState(freelancersData);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortOption, setSortOption] = useState<SortOption>('relevant');
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const freelancersPerPage = 6;
+  const freelancersPerPage = viewMode === 'grid' ? 6 : 8;
 
   const categories = ['IA', 'Blockchain', 'Cryptomonnaie', 'Services PME'];
   
@@ -94,10 +113,13 @@ const Browse = () => {
       );
     }
 
+    // Apply sorting
+    filtered = sortFreelancers(filtered, sortOption);
+
     setFilteredFreelancers(filtered);
     // Reset to first page when filters change
     setCurrentPage(1);
-  }, [searchTerm, selectedCategory, priceRange, minRating, selectedSkills]);
+  }, [searchTerm, selectedCategory, priceRange, minRating, selectedSkills, sortOption]);
 
   // Get current freelancers to display based on pagination
   const indexOfLastFreelancer = currentPage * freelancersPerPage;
@@ -253,73 +275,176 @@ const Browse = () => {
           </BlurCard>
         )}
 
-        {/* Results Count */}
-        <div className="mb-4 flex justify-between items-center">
+        {/* Results Count and Controls */}
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className="text-xl font-semibold">
             {filteredFreelancers.length} freelance{filteredFreelancers.length !== 1 ? 's' : ''} trouvé{filteredFreelancers.length !== 1 ? 's' : ''}
           </h2>
-          {totalPages > 1 && (
-            <div className="text-sm text-muted-foreground">
-              Page {currentPage} sur {totalPages}
+          
+          <div className="flex items-center gap-4">
+            {/* Sorting Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <ArrowUpDown className="h-4 w-4" />
+                  <span>{getSortLabel(sortOption)}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortOption('relevant')}>
+                  Pertinence
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption('price-low')}>
+                  Prix: croissant
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption('price-high')}>
+                  Prix: décroissant
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption('rating')}>
+                  Note
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption('reviews')}>
+                  Nombre d'avis
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* View Mode Toggles */}
+            <div className="flex border rounded-md overflow-hidden">
+              <Button 
+                variant={viewMode === 'grid' ? 'default' : 'outline'} 
+                size="sm"
+                className="rounded-none"
+                onClick={() => setViewMode('grid')}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant={viewMode === 'list' ? 'default' : 'outline'} 
+                size="sm"
+                className="rounded-none"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
-          )}
+            
+            {totalPages > 1 && (
+              <div className="text-sm text-muted-foreground hidden md:block">
+                Page {currentPage} sur {totalPages}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Freelancers Grid */}
+        {/* Freelancers List/Grid */}
         {currentFreelancers.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {currentFreelancers.map((freelancer) => (
-                <BlurCard key={freelancer.id} className="h-full">
-                  <div className="p-6">
-                    <div className="flex items-start gap-4">
-                      <img 
-                        src={freelancer.image} 
-                        alt={freelancer.name}
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                      <div>
-                        <h3 className="font-semibold text-lg">{freelancer.name}</h3>
-                        <p className="text-muted-foreground">{freelancer.title}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <div className="flex">{renderStars(freelancer.rating)}</div>
-                          <span className="font-medium">{freelancer.rating}</span>
-                          <span className="text-muted-foreground">
-                            ({freelancer.reviews} avis)
-                          </span>
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentFreelancers.map((freelancer) => (
+                  <BlurCard key={freelancer.id} className="h-full">
+                    <div className="p-6">
+                      <div className="flex items-start gap-4">
+                        <img 
+                          src={freelancer.image} 
+                          alt={freelancer.name}
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                        <div>
+                          <h3 className="font-semibold text-lg">{freelancer.name}</h3>
+                          <p className="text-muted-foreground">{freelancer.title}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <div className="flex">{renderStars(freelancer.rating)}</div>
+                            <span className="font-medium">{freelancer.rating}</span>
+                            <span className="text-muted-foreground">
+                              ({freelancer.reviews} avis)
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="mt-4">
-                      <div className="flex flex-wrap gap-2">
-                        {freelancer.skills.slice(0, 3).map((skill) => (
-                          <Badge key={skill} variant="secondary">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {freelancer.skills.length > 3 && (
-                          <Badge variant="outline">
-                            +{freelancer.skills.length - 3}
-                          </Badge>
-                        )}
+                      <div className="mt-4">
+                        <div className="flex flex-wrap gap-2">
+                          {freelancer.skills.slice(0, 3).map((skill) => (
+                            <Badge key={skill} variant="secondary">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {freelancer.skills.length > 3 && (
+                            <Badge variant="outline">
+                              +{freelancer.skills.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex items-center justify-between">
+                        <span className="text-lg font-semibold">
+                          {freelancer.price}€/h
+                        </span>
+                        <Link to={`/freelancers/${freelancer.id}`}>
+                          <Button variant="outline">
+                            Voir le profil
+                          </Button>
+                        </Link>
                       </div>
                     </div>
-
-                    <div className="mt-6 flex items-center justify-between">
-                      <span className="text-lg font-semibold">
-                        {freelancer.price}€/h
-                      </span>
-                      <Link to={`/freelancers/${freelancer.id}`}>
-                        <Button variant="outline">
-                          Voir le profil
-                        </Button>
-                      </Link>
+                  </BlurCard>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {currentFreelancers.map((freelancer) => (
+                  <BlurCard key={freelancer.id} className="w-full">
+                    <div className="p-6 flex flex-col md:flex-row md:items-center gap-6">
+                      <div className="flex items-start gap-4 flex-1">
+                        <img 
+                          src={freelancer.image} 
+                          alt={freelancer.name}
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                        <div>
+                          <h3 className="font-semibold text-lg">{freelancer.name}</h3>
+                          <p className="text-muted-foreground">{freelancer.title}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <div className="flex">{renderStars(freelancer.rating)}</div>
+                            <span className="font-medium">{freelancer.rating}</span>
+                            <span className="text-muted-foreground">
+                              ({freelancer.reviews} avis)
+                            </span>
+                          </div>
+                          
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {freelancer.skills.slice(0, 4).map((skill) => (
+                              <Badge key={skill} variant="secondary" className="mr-1">
+                                {skill}
+                              </Badge>
+                            ))}
+                            {freelancer.skills.length > 4 && (
+                              <Badge variant="outline">
+                                +{freelancer.skills.length - 4}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between md:flex-col md:items-end gap-3">
+                        <span className="text-lg font-semibold">
+                          {freelancer.price}€/h
+                        </span>
+                        <Link to={`/freelancers/${freelancer.id}`}>
+                          <Button>
+                            Voir le profil
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </BlurCard>
-              ))}
-            </div>
+                  </BlurCard>
+                ))}
+              </div>
+            )}
 
             {/* Pagination */}
             {totalPages > 1 && (
