@@ -45,12 +45,16 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
+      // Call the signOut method from AuthContext
       await signOut();
+      
+      // Show success toast
       toast({
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès",
       });
-      // No need to navigate manually, AuthContext will handle it
+      
+      // Note: No need to navigate manually as AuthContext handles redirection
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       toast({

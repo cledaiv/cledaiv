@@ -63,8 +63,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Force clear state first for immediate UI update
+      setUser(null);
+      setSession(null);
+      
+      // Then perform supabase signout
       await supabase.auth.signOut();
-      // No need to manually set user/session to null as the auth state listener will handle it
+      
+      // Force a page reload to ensure clean state
+      window.location.href = '/';
     } catch (error) {
       console.error("Error during sign out:", error);
       // Force a page reload on error to ensure the user is logged out client-side
