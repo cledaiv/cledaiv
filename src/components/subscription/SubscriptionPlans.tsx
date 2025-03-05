@@ -18,7 +18,7 @@ const SubscriptionPlans = () => {
       return;
     }
     
-    // Rediriger vers la page de paiement avec le plan sélectionné
+    // Redirect to the payment page with the selected plan
     navigate(`/payment?plan=${plan}`);
   };
 

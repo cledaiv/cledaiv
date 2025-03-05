@@ -1,291 +1,194 @@
+import React, { useState, useEffect } from 'react';
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { Freelancer } from '@/types';
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useNavigate } from 'react-router-dom';
-import { useProjects } from '@/hooks/use-projects';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+interface ProjectFormProps {
+  projectToEdit?: any;
+  onSubmit: (projectData: any) => void;
+  freelancers: Freelancer[];
+  user: any;
+}
 
-const projectFormSchema = z.object({
-  title: z.string().min(1, 'Le titre est requis'),
-  description: z.string().optional(),
-  status: z.string().default('draft'),
-  budget: z.coerce.number().positive().optional().nullable(),
-  currency: z.string().default('EUR'),
-  start_date: z.date().optional().nullable(),
-  deadline: z.date().optional().nullable(),
-});
+const ProjectForm = ({ projectToEdit, onSubmit, freelancers, user }: ProjectFormProps) => {
+  const [title, setTitle] = useState(projectToEdit?.title || '');
+  const [description, setDescription] = useState(projectToEdit?.description || '');
+  const [status, setStatus] = useState(projectToEdit?.status || 'open');
+  const [budget, setBudget] = useState(projectToEdit?.budget || '');
+  const [currency, setCurrency] = useState(projectToEdit?.currency || 'EUR');
+  const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(projectToEdit?.freelancer || null);
+  const [startDate, setStartDate] = useState<Date | undefined>(projectToEdit?.start_date ? new Date(projectToEdit.start_date) : undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(projectToEdit?.deadline ? new Date(projectToEdit.deadline) : undefined);
 
-type ProjectFormValues = z.infer<typeof projectFormSchema>;
-
-export const ProjectForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createProject } = useProjects();
-  const navigate = useNavigate();
-
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectFormSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      status: 'draft',
-      budget: null,
-      currency: 'EUR',
-      start_date: null,
-      deadline: null,
-    },
-  });
-
-  const onSubmit = async (values: ProjectFormValues) => {
-    setIsSubmitting(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    try {
-      // Conversion des dates au format ISO et préparation des données du projet
-      const projectData = {
-        title: values.title,
-        description: values.description || null,
-        status: values.status || 'draft',
-        budget: values.budget,
-        currency: values.currency || 'EUR',
-        freelancer_id: null,
-        start_date: values.start_date ? values.start_date.toISOString() : null,
-        deadline: values.deadline ? values.deadline.toISOString() : null,
-      };
-      
-      // client_id sera automatiquement ajouté dans le hook useProjects
-      const newProject = await createProject(projectData);
-      
-      if (newProject) {
-        navigate(`/projects/${newProject.id}`);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Create the project data
+    const projectData = {
+      title,
+      description,
+      status,
+      budget: Number(budget),
+      currency,
+      freelancer_id: selectedFreelancer?.id,
+      client_id: user?.id, // Add the missing client_id
+      start_date: startDate,
+      deadline: endDate
+    };
+    
+    // Call the onSubmit callback with the project data
+    onSubmit(projectData);
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Titre du projet</FormLabel>
-              <FormControl>
-                <Input placeholder="Entrez le titre du projet" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="title">Titre du projet</Label>
+        <Input
+          type="text"
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
         />
-        
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Décrivez votre projet en quelques mots" 
-                  className="min-h-[120px]" 
-                  {...field} 
-                  value={field.value || ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      <div>
+        <Label htmlFor="description">Description du projet</Label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
         />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="budget"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Budget (optionnel)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="Montant" 
-                    {...field}
-                    value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+      </div>
+      <div>
+        <Label htmlFor="status">Statut</Label>
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner un statut" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="open">Ouvert</SelectItem>
+            <SelectItem value="in_progress">En cours</SelectItem>
+            <SelectItem value="completed">Terminé</SelectItem>
+            <SelectItem value="cancelled">Annulé</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="budget">Budget</Label>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="number"
+            id="budget"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            required
+            className="w-32"
           />
-          
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Devise</FormLabel>
-                <Select 
-                  defaultValue={field.value} 
-                  onValueChange={field.onChange}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner une devise" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="EUR">Euro (€)</SelectItem>
-                    <SelectItem value="USD">Dollar ($)</SelectItem>
-                    <SelectItem value="GBP">Livre Sterling (£)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Select value={currency} onValueChange={setCurrency}>
+            <SelectTrigger>
+              <SelectValue placeholder="Devise" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="EUR">EUR</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="GBP">GBP</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="start_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Date de début</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className="w-full pl-3 text-left font-normal"
-                      >
-                        {field.value ? (
-                          format(field.value, "d MMMM yyyy", { locale: fr })
-                        ) : (
-                          <span className="text-muted-foreground">Sélectionner une date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value || undefined}
-                      onSelect={field.onChange}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="deadline"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Date limite</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className="w-full pl-3 text-left font-normal"
-                      >
-                        {field.value ? (
-                          format(field.value, "d MMMM yyyy", { locale: fr })
-                        ) : (
-                          <span className="text-muted-foreground">Sélectionner une date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value || undefined}
-                      onSelect={field.onChange}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Statut</FormLabel>
-              <Select 
-                defaultValue={field.value} 
-                onValueChange={field.onChange}
+      </div>
+      <div>
+        <Label htmlFor="freelancer">Freelancer</Label>
+        <Select
+          value={selectedFreelancer?.id || ''}
+          onValueChange={(value) => {
+            const freelancer = freelancers.find((f) => f.id === value);
+            setSelectedFreelancer(freelancer || null);
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner un freelancer" />
+          </SelectTrigger>
+          <SelectContent>
+            {freelancers.map((freelancer) => (
+              <SelectItem key={freelancer.id} value={freelancer.id}>
+                {freelancer.full_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Date de début</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={
+                  "w-full justify-start text-left font-normal" +
+                  (startDate ? " text-foreground" : " text-muted-foreground")
+                }
               >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un statut" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="draft">Brouillon</SelectItem>
-                  <SelectItem value="pending">En attente</SelectItem>
-                  <SelectItem value="in_progress">En cours</SelectItem>
-                  <SelectItem value="completed">Terminé</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="flex justify-end space-x-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => navigate('/projects')}
-          >
-            Annuler
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Création...' : 'Créer le projet'}
-          </Button>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, "PPP") : <span>Choisir une date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="center" side="bottom">
+              <Calendar
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                disabled={(date) =>
+                  date > new Date()
+                }
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
-      </form>
-    </Form>
+        <div>
+          <Label>Date de fin</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={
+                  "w-full justify-start text-left font-normal" +
+                  (endDate ? " text-foreground" : " text-muted-foreground")
+                }
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, "PPP") : <span>Choisir une date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="center" side="bottom">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                disabled={(date) =>
+                  date < startDate || date < new Date()
+                }
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+      <Button type="submit">
+        {projectToEdit ? 'Mettre à jour le projet' : 'Créer le projet'}
+      </Button>
+    </form>
   );
 };
+
+export default ProjectForm;

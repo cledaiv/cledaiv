@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import WalletTab from '@/components/payment/WalletTab';
@@ -11,11 +10,25 @@ import EscrowTab from '@/components/payment/EscrowTab';
 const PaymentPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("wallet");
+  const [activeTab, setActiveTab] = useState("pay");
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   
-  // Rediriger si non authentifié
+  const searchParams = new URLSearchParams(location.search);
+  const plan = searchParams.get('plan');
+  
+  const getAmountForPlan = () => {
+    switch(plan) {
+      case 'freelance':
+        return 29.99;
+      case 'client':
+        return 99.99;
+      default:
+        return 0;
+    }
+  };
+  
   useEffect(() => {
     if (!user) {
       toast({
@@ -23,25 +36,35 @@ const PaymentPage = () => {
         description: 'Veuillez vous connecter pour accéder à la page de paiement.',
         variant: 'destructive',
       });
-      navigate('/auth');
+      navigate('/auth?redirect=payment');
     }
   }, [user, navigate, toast]);
 
   const handlePaymentSuccess = (intentId: string) => {
     setPaymentIntentId(intentId);
-    // Dans une application réelle, nous mettrions à jour la base de données ici
+    toast({
+      title: 'Abonnement activé',
+      description: plan 
+        ? `Votre abonnement ${plan} a été activé avec succès.` 
+        : 'Votre paiement a été traité avec succès.',
+    });
   };
 
   const handleCryptoSuccess = (txHash: string) => {
-    // Dans une application réelle, nous mettrions à jour la base de données ici
     toast({
       title: 'Paiement crypto confirmé',
       description: `Transaction ${txHash.substring(0, 8)}...${txHash.substring(txHash.length - 8)} enregistrée.`,
     });
+    
+    if (plan) {
+      toast({
+        title: 'Abonnement activé',
+        description: `Votre abonnement ${plan} a été activé avec succès.`,
+      });
+    }
   };
 
   const handleReleaseEscrow = () => {
-    // Dans une application réelle, nous mettrions à jour la base de données ici
     toast({
       title: 'Fonds libérés',
       description: 'Le paiement a été transféré au freelance.',
@@ -70,7 +93,6 @@ const PaymentPage = () => {
     });
   };
 
-  // Données de démonstration
   const mockWalletBalance = 2450.75;
   const mockCryptoBalances = [
     { currency: 'BTC', amount: 0.02 },
@@ -101,6 +123,16 @@ const PaymentPage = () => {
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-2">Paiements</h1>
+      {plan && (
+        <div className="bg-muted p-4 rounded-md mb-6">
+          <p className="font-medium">
+            Abonnement sélectionné: <span className="text-primary capitalize">{plan}</span>
+          </p>
+          <p className="text-muted-foreground">
+            Montant: {getAmountForPlan()}€ / mois
+          </p>
+        </div>
+      )}
       <p className="text-muted-foreground mb-6">
         Gérez vos paiements, votre portefeuille numérique et vos transactions sécurisées.
       </p>
@@ -129,6 +161,8 @@ const PaymentPage = () => {
           <PaymentTab 
             onPaymentSuccess={handlePaymentSuccess}
             onCryptoSuccess={handleCryptoSuccess}
+            amount={getAmountForPlan()}
+            planType={plan}
           />
         </TabsContent>
 
