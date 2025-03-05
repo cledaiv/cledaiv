@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,6 @@ const Auth = () => {
   const { toast } = useToast();
   const [authType, setAuthType] = useState<'signin' | 'signup'>('signin');
   
-  // Get type from URL query params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const type = params.get('type');
@@ -29,7 +27,6 @@ const Auth = () => {
     }
   }, [location]);
   
-  // Check if user is already logged in
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -40,7 +37,6 @@ const Auth = () => {
     
     checkSession();
     
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
@@ -54,7 +50,6 @@ const Auth = () => {
     };
   }, [navigate]);
   
-  // State for form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -81,7 +76,6 @@ const Auth = () => {
         variant: 'default',
       });
       
-      // Navigation will be handled by the auth state listener
     } catch (error: any) {
       setError(error.message || 'Une erreur est survenue lors de la connexion');
       toast({
@@ -100,7 +94,6 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      // Register the user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -120,7 +113,6 @@ const Auth = () => {
         variant: 'default',
       });
       
-      // If email confirmation is disabled, the user will be automatically signed in
     } catch (error: any) {
       setError(error.message || 'Une erreur est survenue lors de l\'inscription');
       toast({
@@ -184,7 +176,6 @@ const Auth = () => {
         </Button>
         
         <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-          {/* Left side - Auth form */}
           <div className="order-2 md:order-1">
             <Card className="border-border/40 shadow-md">
               <CardHeader>
@@ -394,11 +385,10 @@ const Auth = () => {
             </Card>
           </div>
           
-          {/* Right side - Brand message */}
           <div className="order-1 md:order-2 text-center md:text-left">
             <div className="mb-6">
               <Link to="/" className="inline-block">
-                <span className="text-3xl font-semibold bg-gradient-to-r from-indigo-500 to-cyan-400 bg-clip-text text-transparent">
+                <span className="text-3xl font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
                   FreelanceAI
                 </span>
               </Link>

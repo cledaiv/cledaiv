@@ -44,7 +44,7 @@ const Navbar = () => {
   return (
     <div className="bg-background border-b">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="font-bold text-xl">
+        <Link to="/" className="font-bold text-xl bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
           MyFreelancer
         </Link>
         <NavLinks />
