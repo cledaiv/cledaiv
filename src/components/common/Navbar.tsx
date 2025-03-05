@@ -96,9 +96,9 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Link to="/auth">
-            <Button>Se connecter</Button>
-          </Link>
+          <Button onClick={() => navigate('/auth')}>
+            Se connecter
+          </Button>
         )}
       </div>
     </div>
