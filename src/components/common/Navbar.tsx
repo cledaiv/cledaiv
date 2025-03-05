@@ -29,7 +29,7 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Accueil', path: '/' },
     { name: 'Explorer', path: '/browse' },
-    { name: 'Comment ça marche', path: '/#how-it-works' },
+    { name: 'Comment ça marche', path: '/how-it-works' },
     { name: 'À propos', path: '/about' },
   ];
 
