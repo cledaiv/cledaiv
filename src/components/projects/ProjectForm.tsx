@@ -63,11 +63,14 @@ export const ProjectForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Correction: Inclure toutes les propriétés requises par le type Project
+      // Conversion des dates au format ISO et préparation des données du projet
       const projectData = {
-        ...values,
-        // La propriété client_id est automatiquement définie dans le hook useProjects
-        // freelancer_id est optionnel et peut être null au départ
+        title: values.title,
+        description: values.description || null,
+        status: values.status || 'draft',
+        budget: values.budget,
+        currency: values.currency || 'EUR',
+        // Note: client_id est automatiquement ajouté dans le hook useProjects
         freelancer_id: null,
         start_date: values.start_date ? values.start_date.toISOString() : null,
         deadline: values.deadline ? values.deadline.toISOString() : null,
@@ -286,4 +289,3 @@ export const ProjectForm = () => {
     </Form>
   );
 };
-
