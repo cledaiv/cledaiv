@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -52,7 +53,7 @@ const Auth = () => {
       });
       
       // Redirect to dashboard or home
-      navigate('/dashboard');
+      navigate('/');
     }, 1500);
   };
 
