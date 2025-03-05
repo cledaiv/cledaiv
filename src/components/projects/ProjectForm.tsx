@@ -70,12 +70,12 @@ export const ProjectForm = () => {
         status: values.status || 'draft',
         budget: values.budget,
         currency: values.currency || 'EUR',
-        // Note: client_id est automatiquement ajouté dans le hook useProjects
         freelancer_id: null,
         start_date: values.start_date ? values.start_date.toISOString() : null,
         deadline: values.deadline ? values.deadline.toISOString() : null,
       };
       
+      // client_id sera automatiquement ajouté dans le hook useProjects
       const newProject = await createProject(projectData);
       
       if (newProject) {
