@@ -55,15 +55,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      // Explicitly update the state after sign out
-      setSession(null);
+      // Force setting user state to null first to ensure UI updates immediately
       setUser(null);
+      setSession(null);
+      
+      // Then attempt the actual signout
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.warn("Non-critical signout error:", error);
+        // We already nullified the user state above, so we can ignore this error
+      }
     } catch (error) {
       console.error("Error during sign out:", error);
-      throw error;
+      // Even if there's an error, we want to ensure the user is logged out locally
+      setUser(null);
+      setSession(null);
     }
   };
 

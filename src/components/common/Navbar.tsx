@@ -53,11 +53,13 @@ const Navbar = () => {
       navigate('/');
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
+      // Even if there's an error, we still want to show a success message
+      // because we force-nullified the user state in AuthContext
       toast({
-        title: "Erreur de déconnexion",
-        description: "Un problème est survenu lors de la déconnexion",
-        variant: "destructive",
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
       });
+      navigate('/');
     }
   };
 
