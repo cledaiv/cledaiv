@@ -6,50 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, SlidersHorizontal, Star } from 'lucide-react';
 import BlurCard from '@/components/ui/blur-card';
-
-// Mock data for freelancer listings
-const freelancers = [
-  {
-    id: 1,
-    name: "Thomas Laurent",
-    title: "Expert IA & Machine Learning",
-    rating: 4.9,
-    reviews: 127,
-    hourlyRate: 95,
-    skills: ["Python", "TensorFlow", "Deep Learning"],
-    image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 2,
-    name: "Sophie Dubois",
-    title: "Développeuse Blockchain Senior",
-    rating: 4.8,
-    reviews: 94,
-    hourlyRate: 110,
-    skills: ["Ethereum", "Smart Contracts", "Solidity"],
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 3,
-    name: "Alexandre Martin",
-    title: "Consultant Crypto & Finance",
-    rating: 4.7,
-    reviews: 78,
-    hourlyRate: 85,
-    skills: ["DeFi", "Trading", "Tokenisation"],
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 4,
-    name: "Elise Bernard",
-    title: "Architecte Solutions PME",
-    rating: 4.9,
-    reviews: 112,
-    hourlyRate: 90,
-    skills: ["CRM", "ERP", "Digital Transformation"],
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
-  },
-];
+import { freelancersData } from '@/data/freelancers';
 
 const Browse = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,7 +60,7 @@ const Browse = () => {
 
         {/* Freelancers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {freelancers.map((freelancer) => (
+          {freelancersData.map((freelancer) => (
             <BlurCard key={freelancer.id} className="h-full">
               <div className="p-6">
                 <div className="flex items-start gap-4">
@@ -127,7 +84,7 @@ const Browse = () => {
 
                 <div className="mt-4">
                   <div className="flex flex-wrap gap-2">
-                    {freelancer.skills.map((skill) => (
+                    {freelancer.skills.slice(0, 3).map((skill) => (
                       <Badge key={skill} variant="secondary">
                         {skill}
                       </Badge>
@@ -137,7 +94,7 @@ const Browse = () => {
 
                 <div className="mt-6 flex items-center justify-between">
                   <span className="text-lg font-semibold">
-                    {freelancer.hourlyRate}€/h
+                    {freelancer.price}€/h
                   </span>
                   <Link to={`/freelancers/${freelancer.id}`}>
                     <Button variant="outline">
