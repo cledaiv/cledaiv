@@ -19,7 +19,36 @@ const freelancers = [
     skills: ["Python", "TensorFlow", "Deep Learning"],
     image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
   },
-  // ... Ajoutez plus de freelancers ici
+  {
+    id: 2,
+    name: "Sophie Dubois",
+    title: "Développeuse Blockchain Senior",
+    rating: 4.8,
+    reviews: 94,
+    hourlyRate: 110,
+    skills: ["Ethereum", "Smart Contracts", "Solidity"],
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: 3,
+    name: "Alexandre Martin",
+    title: "Consultant Crypto & Finance",
+    rating: 4.7,
+    reviews: 78,
+    hourlyRate: 85,
+    skills: ["DeFi", "Trading", "Tokenisation"],
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: 4,
+    name: "Elise Bernard",
+    title: "Architecte Solutions PME",
+    rating: 4.9,
+    reviews: 112,
+    hourlyRate: 90,
+    skills: ["CRM", "ERP", "Digital Transformation"],
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+  },
 ];
 
 const Browse = () => {

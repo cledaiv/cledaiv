@@ -70,7 +70,7 @@ const freelancersData = [
         image: "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
       }
     ],
-    reviews: [
+    reviewsList: [
       {
         id: 1,
         user: "Sophie Martin",
@@ -159,7 +159,7 @@ const freelancersData = [
         image: "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
       }
     ],
-    reviews: [
+    reviewsList: [
       {
         id: 1,
         user: "Pierre Moreau",
@@ -228,7 +228,7 @@ const freelancersData = [
         image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
       }
     ],
-    reviews: [
+    reviewsList: [
       {
         id: 1,
         user: "Claire Dupont",
@@ -282,7 +282,7 @@ const freelancersData = [
         image: "https://images.unsplash.com/photo-1664575196044-195f135295df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
       }
     ],
-    reviews: [
+    reviewsList: [
       {
         id: 1,
         user: "Jean Leroy",
@@ -431,7 +431,7 @@ const FreelancerDetail = () => {
               <TabsList className="w-full grid grid-cols-3 mb-8">
                 <TabsTrigger value="about">À propos</TabsTrigger>
                 <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-                <TabsTrigger value="reviews">Avis ({freelancer.reviews?.length || 0})</TabsTrigger>
+                <TabsTrigger value="reviews">Avis ({freelancer.reviewsList?.length || 0})</TabsTrigger>
               </TabsList>
               
               <TabsContent value="about" className="space-y-8">
@@ -498,7 +498,7 @@ const FreelancerDetail = () => {
                 <h2 className="text-xl font-semibold mb-4">Avis clients</h2>
                 
                 <div className="space-y-4">
-                  {freelancer.reviews.map((review: any) => (
+                  {freelancer.reviewsList.map((review: any) => (
                     <BlurCard key={review.id} className="p-5">
                       <div className="flex items-start gap-4">
                         <img 
