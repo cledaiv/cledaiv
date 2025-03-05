@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ProjectForm } from '@/components/projects/ProjectForm';
+import ProjectForm from '@/components/projects/ProjectForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
