@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -165,12 +164,12 @@ export const ProjectTasks = ({ projectId }: { projectId: string }) => {
     try {
       const taskData = {
         ...values,
+        title: values.title,
         due_date: values.due_date ? values.due_date.toISOString() : null,
         project_id: projectId,
       };
 
       if (editingTask) {
-        // Mise à jour d'une tâche existante
         const { error } = await supabase
           .from('project_tasks')
           .update(taskData)
@@ -183,7 +182,6 @@ export const ProjectTasks = ({ projectId }: { projectId: string }) => {
           description: 'La tâche a été mise à jour avec succès',
         });
       } else {
-        // Création d'une nouvelle tâche
         const { error } = await supabase
           .from('project_tasks')
           .insert([taskData]);
@@ -196,7 +194,6 @@ export const ProjectTasks = ({ projectId }: { projectId: string }) => {
         });
       }
 
-      // Réinitialisation et fermeture du dialogue
       setEditingTask(null);
       setIsDialogOpen(false);
       fetchTasks();
@@ -224,7 +221,6 @@ export const ProjectTasks = ({ projectId }: { projectId: string }) => {
 
       if (error) throw error;
 
-      // Mise à jour locale de l'état
       setTasks(tasks.map(task => 
         task.id === taskId ? { ...task, status: newStatus } : task
       ));
