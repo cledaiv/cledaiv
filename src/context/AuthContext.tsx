@@ -44,15 +44,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, currentSession) => {
         console.log("Auth state changed:", event, !!currentSession);
         
-        // Update session and user state
-        setSession(currentSession);
-        setUser(currentSession?.user || null);
-        setLoading(false);
-        
-        // Force reload on sign out to clear any cached state
         if (event === 'SIGNED_OUT') {
-          window.location.href = '/';
+          // On sign out, immediately clear state
+          setSession(null);
+          setUser(null);
+          // No need to reload here, we'll handle it in signOut function
+        } else {
+          // For other events, update session and user state
+          setSession(currentSession);
+          setUser(currentSession?.user || null);
         }
+        
+        setLoading(false);
       }
     );
 
@@ -63,24 +66,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // First clear local state immediately
+      // Immediately set loading to prevent UI flicker
+      setLoading(true);
+      
+      // Clear local state before API call
       setUser(null);
       setSession(null);
       
+      // Set a flag in sessionStorage to prevent automatic login after redirect
+      sessionStorage.setItem('intentionalLogout', 'true');
+      
       try {
-        // Then attempt the Supabase signout - but don't wait for it if it fails
+        // Attempt Supabase signout but don't wait for success
         await supabase.auth.signOut().catch(e => console.error("Supabase signout error:", e));
-      } catch (innerError) {
-        console.error("Inner signout error:", innerError);
-        // Ignore errors from Supabase signout
+      } catch (error) {
+        console.error("Inner signout error:", error);
+        // Continue even on API error
       }
       
-      // Always force a refresh to clear all local state
-      window.location.href = '/';
+      // Redirect to login page
+      window.location.href = '/auth';
     } catch (error) {
       console.error("Error during sign out:", error);
-      // Even on error, force reload to ensure clean state
-      window.location.href = '/';
+      // Force redirect to auth page even on error
+      window.location.href = '/auth';
     }
   };
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -51,10 +50,9 @@ const Navbar = () => {
     });
     
     try {
-      // Call the signOut method from AuthContext
+      // Call the signOut method from AuthContext which will handle the redirect
       await signOut();
-      
-      // The page will reload automatically from the AuthContext
+      // No need to navigate or show another toast as page will redirect
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       toast({
@@ -62,9 +60,6 @@ const Navbar = () => {
         title: "Erreur de déconnexion",
         description: "Une erreur est survenue lors de la déconnexion",
       });
-      
-      // Force reload even on error
-      window.location.href = '/';
     }
   };
 
