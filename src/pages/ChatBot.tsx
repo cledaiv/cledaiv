@@ -1,141 +1,176 @@
 
-import { useState, useRef, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2, Send, Bot } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Send } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 type Message = {
-  id: string;
+  role: 'user' | 'assistant';
   content: string;
-  isUser: boolean;
-  timestamp: Date;
 };
 
 const ChatBot = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '0',
-      content: 'Bonjour ! Je suis votre assistant IA. Comment puis-je vous aider aujourd\'hui ?',
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [message, setMessage] = useState<string>('');
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  // Redirect if not authenticated
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!user) {
+      toast({
+        title: 'Authentification requise',
+        description: 'Veuillez vous connecter pour accéder au chatbot.',
+        variant: 'destructive',
+      });
+      navigate('/auth');
+    }
+  }, [user, navigate, toast]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Add initial welcome message
+  useEffect(() => {
+    setChatHistory([
+      {
+        role: 'assistant',
+        content: 'Bonjour ! Je suis votre assistant FreelanceAI. Comment puis-je vous aider aujourd\'hui ?',
+      },
+    ]);
+  }, []);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!input.trim()) return;
+    if (!message.trim()) return;
     
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      isUser: true,
-      timestamp: new Date(),
-    };
-    
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    // Add user message to chat
+    const userMessage = { role: 'user' as const, content: message };
+    setChatHistory((prev) => [...prev, userMessage]);
+    setMessage('');
     setIsLoading(true);
-    
+
     try {
-      // Préparer le contexte utilisateur si connecté
-      let context = '';
-      if (user) {
-        context = `L'utilisateur est connecté`;
-      }
+      // Get user context info if available
+      const userContext = user ? `L'utilisateur est connecté avec l'email: ${user.email}` : '';
       
+      // Call the Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('chatbot', {
-        body: { message: input, context },
+        body: { message, context: userContext },
       });
-      
+
       if (error) throw error;
-      
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.answer,
-        isUser: false,
-        timestamp: new Date(),
-      };
-      
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi du message:', error);
+
+      // Add AI response to chat
+      setChatHistory((prev) => [
+        ...prev,
+        { role: 'assistant', content: data.answer },
+      ]);
+    } catch (error: any) {
+      console.error('Chatbot error:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de communiquer avec l'assistant IA. Veuillez réessayer.",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de communiquer avec l\'assistant. Veuillez réessayer.',
+        variant: 'destructive',
       });
+      
+      // Add error message to chat
+      setChatHistory((prev) => [
+        ...prev,
+        { 
+          role: 'assistant', 
+          content: 'Désolé, j\'ai rencontré une erreur de communication. Veuillez réessayer.' 
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
-    <div className="container max-w-4xl py-8">
-      <Card className="h-[80vh] flex flex-col">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="h-6 w-6" />
-            Assistant IA
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="flex-grow overflow-y-auto pb-4">
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+    <div className="container max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-2">Assistant IA</h1>
+      <p className="text-muted-foreground mb-6">
+        Posez vos questions sur notre plateforme, les services freelances, ou pour obtenir de l'aide.
+      </p>
+
+      <Card className="mb-4 border-border/40">
+        <CardContent className="p-0">
+          {/* Chat messages container */}
+          <div 
+            ref={chatContainerRef}
+            className="h-[500px] overflow-y-auto p-4 space-y-4"
+          >
+            {chatHistory.map((msg, index) => (
+              <div 
+                key={index} 
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    message.isUser
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                <div 
+                  className={`flex items-start gap-2 max-w-[80%] ${
+                    msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
-                  <p className="mt-1 text-xs opacity-70">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
+                  <Avatar className={`h-8 w-8 ${msg.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
+                    <AvatarFallback>
+                      {msg.role === 'user' ? 'U' : 'AI'}
+                    </AvatarFallback>
+                    {user?.user_metadata?.avatar_url && msg.role === 'user' && (
+                      <AvatarImage src={user.user_metadata.avatar_url} />
+                    )}
+                  </Avatar>
+                  <div 
+                    className={`rounded-lg px-4 py-2 ${
+                      msg.role === 'user' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted'
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex items-start gap-2 max-w-[80%]">
+                  <Avatar className="h-8 w-8 bg-secondary">
+                    <AvatarFallback>AI</AvatarFallback>
+                  </Avatar>
+                  <div className="rounded-lg px-4 py-2 bg-muted flex items-center">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span>En train de réfléchir...</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        </CardContent>
-        
-        <CardFooter className="border-t p-4">
-          <form onSubmit={handleSubmit} className="flex w-full gap-2">
+          
+          {/* Message input */}
+          <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
             <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Tapez votre message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Posez votre question..."
               disabled={isLoading}
               className="flex-1"
-              autoComplete="off"
             />
-            <Button type="submit" disabled={isLoading || !input.trim()}>
+            <Button type="submit" size="icon" disabled={isLoading || !message.trim()}>
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -143,8 +178,18 @@ const ChatBot = () => {
               )}
             </Button>
           </form>
-        </CardFooter>
+        </CardContent>
       </Card>
+      
+      <div className="text-sm text-muted-foreground">
+        <p>Exemples de questions que vous pouvez poser :</p>
+        <ul className="list-disc list-inside mt-1 space-y-1">
+          <li>Comment trouver un freelance spécialisé en blockchain ?</li>
+          <li>Quels services proposez-vous pour les développeurs ?</li>
+          <li>Comment fonctionne le système de paiement sur la plateforme ?</li>
+          <li>Quelles sont les étapes pour créer un projet ?</li>
+        </ul>
+      </div>
     </div>
   );
 };
